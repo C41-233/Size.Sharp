@@ -27,15 +27,6 @@ namespace Size.Sharp
             sizes[typeof(decimal)] = sizeof(decimal);
         }
 
-        public static long GetFixSize(Type type)
-        {
-            if (type.IsPointer || type.IsByRef)
-            {
-                return IntPtr.Size;
-            }
-            return sizes[type];
-        }
-
         public static bool TryGetFixSize(Type type, out long size)
         {
             if (type.IsPointer || type.IsByRef)
@@ -43,12 +34,22 @@ namespace Size.Sharp
                 size = IntPtr.Size;
                 return true;
             }
+            if (type.IsEnum)
+            {
+                return TryGetFixSize(type.GetEnumUnderlyingType(), out size);
+            }
             return sizes.TryGetValue(type, out size);
+        }
+
+        public static long GetFixSize(Type type)
+        {
+            TryGetFixSize(type, out var size);
+            return size;
         }
 
         public static bool IsFixSize(Type type)
         {
-            return type.IsPointer || type.IsByRef || sizes.ContainsKey(type);
+            return TryGetFixSize(type, out _);
         }
 
         public static IEnumerable<FieldInfo> GetFields(Type type, BindingFlags flag)

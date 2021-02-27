@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Size.Sharp;
 
 namespace Test
@@ -23,6 +24,7 @@ namespace Test
         public int i;
         public string s = "123";
         public byte[] ba = {4, 4, 4};
+        public List<Type> types = new List<Type>{typeof(string)};
     }
 
 }
