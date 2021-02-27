@@ -19,5 +19,10 @@ namespace Test
         {
             Console.WriteLine($"{path} | {type.GetTypeNameString()} | {size}");
         }
+
+        protected override void VisitPath(string path, string oldPath)
+        {
+            Console.WriteLine($"{path} -> {oldPath}");
+        }
     }
 }

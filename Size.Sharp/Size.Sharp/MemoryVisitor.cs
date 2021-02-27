@@ -31,11 +31,15 @@ namespace Size.Sharp
 
         }
 
-        public int VisitCount { get; private set; }
+        public int VisitCount => VisitObjectCount + VisitValueCount;
+        public int VisitObjectCount { get; private set; }
+        public int VisitValueCount { get; private set; }
         public long VisitSize { get; private set; }
+
 
         private readonly Queue<VisitContext> queue = new Queue<VisitContext>();
         private readonly Stopwatch watch = new Stopwatch();
+        private readonly Dictionary<object, string> visits = new Dictionary<object, string>(ReferenceComparer.Instance);
 
         public bool MoveNext(long timeout = 0)
         {
@@ -61,15 +65,50 @@ namespace Size.Sharp
 
         private const long CLRSize = 4 + 4 + 4;
 
+        private void ParseStatic(string parent, Type type)
+        {
+            foreach (var field in Reflect.GetFields(type, BindingFlags.Static))
+            {
+                var path = parent + '.' + field.Name;
+                if (Reflect.IsFixSize(field.FieldType))
+                {
+                    queue.Enqueue(new VisitContext(path, field.FieldType));
+                }
+                else
+                {
+                    var child = field.GetValue(null);
+                    if (child != null)
+                    {
+                        queue.Enqueue(new VisitContext(path, child));
+                    }
+
+                    VisitSize += IntPtr.Size;
+                }
+            }
+        }
+
         private void Parse(string path, object value, Type type)
         {
-            VisitCount++;
+            if (ReferenceEquals(value, this))
+            {
+                return;
+            }
 
             if (value == null)
             {
+                VisitValueCount++;
                 ParseFix(path, type);
                 return;
             }
+
+            if (visits.TryGetValue(value, out var oldPath))
+            {
+                VisitPath(path, oldPath);
+                return;
+            }
+
+            VisitObjectCount++;
+            visits.Add(value, path);
 
             if (value is string str)
             {
