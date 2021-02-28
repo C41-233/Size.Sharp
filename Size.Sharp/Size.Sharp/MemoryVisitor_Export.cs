@@ -11,6 +11,7 @@ namespace Size.Sharp
             {
                 throw new ArgumentNullException(nameof(root));
             }
+
             queue.Enqueue(new VisitContext(name, root));
         }
 
@@ -29,15 +30,15 @@ namespace Size.Sharp
             ParseStatic(type.Name, type);
         }
 
-        protected virtual void VisitObject(string path, Type type, long size)
+        protected virtual void OnVisitObject(string path, Type type, long size, object value)
         {
         }
 
-        protected virtual void VisitInternalValueType(string path, Type type, long size)
+        protected virtual void OnVisitInternalValueType(string path, Type type, long size)
         {
         }
 
-        protected virtual void VisitPath(string path, string oldPath)
+        protected virtual void OnVisitPath(string path, string oldPath)
         {
         }
     }

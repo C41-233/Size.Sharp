@@ -103,7 +103,7 @@ namespace Size.Sharp
 
             if (visits.TryGetValue(value, out var oldPath))
             {
-                VisitPath(path, oldPath);
+                OnVisitPath(path, oldPath);
                 return;
             }
 
@@ -129,14 +129,14 @@ namespace Size.Sharp
         {
             var size = Reflect.GetFixSize(type);
             VisitSize += size;
-            VisitInternalValueType(path, type, size);
+            OnVisitInternalValueType(path, type, size);
         }
 
         private void ParseString(string path, string value)
         {
             const long size = CLRSize + sizeof(int);
             VisitSize += size;
-            VisitObject(path, typeof(string), size);
+            OnVisitObject(path, typeof(string), size, value);
             for (var i = 0; i < value.Length; i++)
             {
                 queue.Enqueue(new VisitContext(path + '[' + i + ']', typeof(char)));
@@ -164,7 +164,7 @@ namespace Size.Sharp
                 size += count * IntPtr.Size;
             }
 
-            VisitObject(path, type, size);
+            OnVisitObject(path, type, size, array);
 
             var indexes = new int[rank];
             var parseContext = new VisitArrayContext
@@ -199,7 +199,7 @@ namespace Size.Sharp
         {
             if (context.FixSize)
             {
-                VisitInternalValueType(path, context.ElementType, context.ElementSize);
+                OnVisitInternalValueType(path, context.ElementType, context.ElementSize);
             }
             else
             {
@@ -234,7 +234,7 @@ namespace Size.Sharp
             }
 
             VisitSize += size;
-            VisitObject(parent, type, size);
+            OnVisitObject(parent, type, size, root);
         }
 
     }

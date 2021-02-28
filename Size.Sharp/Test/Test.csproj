@@ -41,8 +41,9 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-    <Reference Include="TypeName.Sharp">
-      <HintPath>lib\TypeName.Sharp.dll</HintPath>
+    <Reference Include="TypeName.Sharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b53c14766db3b458, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\lib\TypeName.Sharp.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

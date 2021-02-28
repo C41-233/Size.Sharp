@@ -10,17 +10,17 @@ namespace Test
 {
     class DefaultMemoryVisitor : MemoryVisitor
     {
-        protected override void VisitObject(string path, Type type, long size)
+        protected override void OnVisitObject(string path, Type type, long size, object value)
         {
             Console.WriteLine($"{path} | {type.GetTypeNameString()} | {size}");
         }
 
-        protected override void VisitInternalValueType(string path, Type type, long size)
+        protected override void OnVisitInternalValueType(string path, Type type, long size)
         {
             Console.WriteLine($"{path} | {type.GetTypeNameString()} | {size}");
         }
 
-        protected override void VisitPath(string path, string oldPath)
+        protected override void OnVisitPath(string path, string oldPath)
         {
             Console.WriteLine($"{path} -> {oldPath}");
         }

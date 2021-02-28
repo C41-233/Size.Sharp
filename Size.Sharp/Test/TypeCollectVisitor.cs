@@ -12,7 +12,7 @@ namespace Test
 
         public Dictionary<Type, int > dic = new Dictionary<Type, int>();
 
-        protected override void VisitObject(string path, Type type, long size)
+        protected override void OnVisitObject(string path, Type type, long size, object value)
         {
             if (dic.TryGetValue(type, out var count))
             {
@@ -24,7 +24,7 @@ namespace Test
             }
         }
 
-        protected override void VisitInternalValueType(string path, Type type, long size)
+        protected override void OnVisitInternalValueType(string path, Type type, long size)
         {
             if (dic.TryGetValue(type, out var count))
             {
