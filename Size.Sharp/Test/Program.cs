@@ -18,7 +18,13 @@ namespace Test
         {
             root.root = root;
             var visitor = new ReportMemoryVisitor(new FileStream("output.html", FileMode.Create));
-            visitor.Add(root);
+            foreach (var ass in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                foreach (var type in ass.GetTypes())
+                {
+                    visitor.Add(type);
+                }
+            }
             while (visitor.MoveNext())
             {
             }
