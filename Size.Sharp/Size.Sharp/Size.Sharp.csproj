@@ -67,5 +67,8 @@
     <EmbeddedResource Include="Report\template\lib\element-ui.css" />
     <EmbeddedResource Include="Report\template\lib\element-ui.js" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Report\template\style.css" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

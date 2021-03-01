@@ -33,7 +33,13 @@ namespace Size.Sharp.Report
 
         protected override void OnVisitInternalValueType(string path, Type type, long size)
         {
-            //writer.WriteLine($"{path} | {type.GetTypeNameString()} | {size}");
+            root.Element();
+            var jobj = new JsonObject(writer);
+            jobj.BeginObject();
+            jobj.Field("path", path);
+            jobj.Field("type", type.GetTypeNameString());
+            jobj.Field("size", size);
+            jobj.EndObject();
         }
 
         protected override void OnVisitPath(string path, string oldPath)

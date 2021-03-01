@@ -1,0 +1,10 @@
+﻿.path-name,
+.path-type,
+.path-size {
+	display: inline-block;
+	margin-right: 15px;
+}
+
+.path-name{
+	font-weight: bold;
+}

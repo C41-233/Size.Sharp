@@ -10,6 +10,9 @@
     <style type="text/css">
         /*@lib.element-ui.css*/
     </style>
+    <style type="text/css">
+        /*style.css*/
+    </style>
     <script type="text/javascript">
         //@lib.vue.min.js
     </script>
@@ -27,16 +30,19 @@
     <template>
         <el-tree
             :props="props"
-            :load="loadNode"
+            :load="load"
+            :render-content="renderContent"
             lazy
-            show-checkbox>
-        </el-tree>
+        />
     </template>
 </main>
     
 <script type="text/javascript">
-    //@script.js
+    //script.js
 </script>
+
+<script src="../../../Size.Sharp/Report/template/script.js"></script>    
+<link href="../../../Size.Sharp/Report/template/style.css" rel="stylesheet"/>    
 
 </body>
 
