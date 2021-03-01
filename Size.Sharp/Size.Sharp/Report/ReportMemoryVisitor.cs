@@ -1,54 +1,34 @@
 ﻿using System;
 using System.IO;
+using TypeName;
 
 namespace Size.Sharp.Report
 {
     public sealed class ReportMemoryVisitor : MemoryVisitor, IDisposable
     {
 
-        private static readonly string[] TemplateLines;
-
-        static ReportMemoryVisitor()
-        {
-            var input = typeof(ReportMemoryVisitor).Assembly.GetManifestResourceStream(typeof(ReportMemoryVisitor), "template.html");
-            string body;
-            // ReSharper disable once AssignNullToNotNullAttribute
-            using (var reader = new StreamReader(input))
-            {
-                body = reader.ReadToEnd();
-            }
-
-            TemplateLines = body.Split('\n');
-            for (var i = 0; i < TemplateLines.Length; i++)
-            {
-                var trim = TemplateLines[i].Trim();
-                if (trim == "//@@")
-                {
-                    TemplateLines[i] = null;
-                }
-                else if(trim.StartsWith("@"))
-                {
-                    
-                }
-            }
-        }
-
         private readonly StreamWriter writer;
-        private int currentLineIndex;
+        private readonly JsonRoot root;
 
         public ReportMemoryVisitor(Stream stream)
         {
             writer = new StreamWriter(stream);
-            WriteNext();
-            writer.Write("var G =[");
+            root = new JsonRoot(writer);
+
+            writer.Write(Template.Begin);
+            writer.Write("var G =");
+            root.Begin();
         }
 
         protected override void OnVisitObject(string path, Type type, long size, object value)
         {
-            writer.Write("{");
-            writer.Write($"\"path\": \"{path}\"");
-            writer.Write("}");
-            //writer.WriteLine($"{path} | {type.GetTypeNameString()} | {size}");
+            root.Element();
+            var jobj = new JsonObject(writer);
+            jobj.BeginObject();
+            jobj.Field("path", path);
+            jobj.Field("type", type.GetTypeNameString());
+            jobj.Field("size", size);
+            jobj.EndObject();
         }
 
         protected override void OnVisitInternalValueType(string path, Type type, long size)
@@ -63,26 +43,11 @@ namespace Size.Sharp.Report
 
         public void Dispose()
         {
-            writer.Write("]");
+            root.End();
             writer.WriteLine();
-            WriteNext();
+            writer.Write(Template.End);
             writer.Dispose();
         }
-
-        private void WriteNext()
-        {
-            while (currentLineIndex < TemplateLines.Length)
-            {
-                var line = TemplateLines[currentLineIndex];
-                currentLineIndex++;
-                if (line == null)
-                {
-                    return;
-                }
-                writer.WriteLine(line);
-            }
-        }
-
 
     }
 }

@@ -49,10 +49,23 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReferenceComparer.cs" />
     <Compile Include="Reflect.cs" />
+    <Compile Include="Report\JsonRoot.cs" />
+    <Compile Include="Report\JsonObject.cs" />
     <Compile Include="Report\ReportMemoryVisitor.cs" />
+    <Compile Include="Report\Template.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Report\template.html" />
+    <EmbeddedResource Include="Report\template\template.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Report\template\script.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Report\template\lib\vue.min.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Report\template\lib\element-ui.css" />
+    <EmbeddedResource Include="Report\template\lib\element-ui.js" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -139,7 +139,7 @@ namespace Size.Sharp
             OnVisitObject(path, typeof(string), size, value);
             for (var i = 0; i < value.Length; i++)
             {
-                queue.Enqueue(new VisitContext(path + '[' + i + ']', typeof(char)));
+                queue.Enqueue(new VisitContext(path + '.' + i, typeof(char)));
             }
         }
 
@@ -183,7 +183,7 @@ namespace Size.Sharp
             for (var i=lower; i<=upper; i++)
             {
                 indexes[dimension] = i;
-                var path = parent + '[' + i + ']';
+                var path = parent + '.' + i;
                 if (dimension == indexes.Length - 1)
                 {
                     ParseArrayElement(ref context, path, array, indexes);
