@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace Size.Sharp
+namespace Size.Sharp.Core
 {
 
     internal static class Reflect

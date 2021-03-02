@@ -42,9 +42,24 @@ namespace Size.Sharp.Report
             jobj.EndObject();
         }
 
+        protected override void OnVisitType(string path, Type type, long size)
+        {
+            root.Element();
+            var jobj = new JsonObject(writer);
+            jobj.BeginObject();
+            jobj.Field("path", path);
+            jobj.Field("size", size);
+            jobj.EndObject();
+        }
+
         protected override void OnVisitPath(string path, string oldPath)
         {
-            //writer.WriteLine($"{path} -> {oldPath}");
+            root.Element();
+            var jobj = new JsonObject(writer);
+            jobj.BeginObject();
+            jobj.Field("path", path);
+            jobj.Field("alias", oldPath);
+            jobj.EndObject();
         }
 
         public void Dispose()

@@ -2,34 +2,13 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
+using Size.Sharp.Core;
 
 namespace Size.Sharp
 {
 
     public abstract partial class MemoryVisitor
     {
-
-        private struct VisitContext
-        {
-            public readonly string Path;
-            public readonly object Value;
-            public readonly Type Type;
-
-            public VisitContext(string path, object value)
-            {
-                Path = path;
-                Value = value;
-                Type = Value.GetType();
-            }
-
-            public VisitContext(string path, Type type)
-            {
-                Path = path;
-                Value = null;
-                Type = type;
-            }
-
-        }
 
         public int VisitCount => VisitObjectCount + VisitValueCount;
         public int VisitObjectCount { get; private set; }
@@ -53,7 +32,7 @@ namespace Size.Sharp
                         return true;
                     }
                     var parse = queue.Dequeue();
-                    Parse(parse.Path, parse.Value, parse.Type);
+                    Parse(parse.Path, parse.Value, parse.Type, parse.VisitType);
                 }
                 return false;
             }
@@ -65,39 +44,23 @@ namespace Size.Sharp
 
         private const long CLRSize = 4 + 4 + 4;
 
-        private void ParseStatic(string parent, Type type)
+        private void Parse(string path, object value, Type type, VisitType visitType)
         {
-            foreach (var field in Reflect.GetFields(type, BindingFlags.Static))
+            if (visitType == VisitType.Static)
             {
-                var path = parent + '.' + field.Name;
-                if (Reflect.IsFixSize(field.FieldType))
-                {
-                    queue.Enqueue(new VisitContext(path, field.FieldType));
-                }
-                else
-                {
-                    var child = field.GetValue(null);
-                    if (child != null)
-                    {
-                        queue.Enqueue(new VisitContext(path, child));
-                    }
-
-                    VisitSize += IntPtr.Size;
-                }
-            }
-        }
-
-        private void Parse(string path, object value, Type type)
-        {
-            if (ReferenceEquals(value, this))
-            {
+                ParseStatic(path, type);
                 return;
             }
 
-            if (value == null)
+            if (visitType == VisitType.Fix)
             {
                 VisitValueCount++;
                 ParseFix(path, type);
+                return;
+            }
+
+            if (ReferenceEquals(value, this))
+            {
                 return;
             }
 
@@ -125,6 +88,32 @@ namespace Size.Sharp
             ParseObject(path, value, type);
         }
 
+        private void ParseStatic(string parent, Type type)
+        {
+            long size = 0;
+            foreach (var field in Reflect.GetFields(type, BindingFlags.Static))
+            {
+                var path = parent + '.' + field.Name;
+                if (Reflect.IsFixSize(field.FieldType))
+                {
+                    queue.Enqueue(VisitContext.CreateFix(path, field.FieldType));
+                }
+                else
+                {
+                    var child = field.GetValue(null);
+                    if (child != null)
+                    {
+                        queue.Enqueue(VisitContext.CreateObject(path, child));
+                    }
+
+                    size += IntPtr.Size;
+                }
+            }
+
+            VisitSize += size;
+            OnVisitType(parent, type, size);
+        }
+
         private void ParseFix(string path, Type type)
         {
             var size = Reflect.GetFixSize(type);
@@ -139,7 +128,7 @@ namespace Size.Sharp
             OnVisitObject(path, typeof(string), size, value);
             for (var i = 0; i < value.Length; i++)
             {
-                queue.Enqueue(new VisitContext(path + '.' + i, typeof(char)));
+                queue.Enqueue(VisitContext.CreateFix(path + '.' + i, typeof(char)));
             }
         }
 
@@ -206,7 +195,7 @@ namespace Size.Sharp
                 var value = array.GetValue(indexes);
                 if (value != null)
                 {
-                    queue.Enqueue(new VisitContext(path, value));
+                    queue.Enqueue(VisitContext.CreateObject(path, value));
                 }
             }
         }
@@ -219,14 +208,14 @@ namespace Size.Sharp
                 var path = parent + '.' + field.Name;
                 if (Reflect.IsFixSize(field.FieldType))
                 {
-                    queue.Enqueue(new VisitContext(path, field.FieldType));
+                    queue.Enqueue(VisitContext.CreateFix(path, field.FieldType));
                 }
                 else
                 {
                     var child = field.GetValue(root);
                     if (child != null)
                     {
-                        queue.Enqueue(new VisitContext(path, child));
+                        queue.Enqueue(VisitContext.CreateObject(path, child));
                     }
 
                     size += IntPtr.Size;

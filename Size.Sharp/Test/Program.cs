@@ -18,9 +18,9 @@ namespace Test
         {
             root.root = root;
             var visitor = new ReportMemoryVisitor(new FileStream("output.html", FileMode.Create));
-            foreach (var ass in AppDomain.CurrentDomain.GetAssemblies())
+           // foreach (var ass in AppDomain.CurrentDomain.GetAssemblies())
             {
-                foreach (var type in ass.GetTypes())
+                foreach (var type in Assembly.GetExecutingAssembly().GetTypes())
                 {
                     visitor.Add(type);
                 }

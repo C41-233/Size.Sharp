@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
-namespace Size.Sharp
+namespace Size.Sharp.Core
 {
     internal class ReferenceComparer : IEqualityComparer<object>
     {

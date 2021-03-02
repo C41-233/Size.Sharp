@@ -12,7 +12,7 @@ namespace Size.Sharp
                 throw new ArgumentNullException(nameof(root));
             }
 
-            queue.Enqueue(new VisitContext(name, root));
+            queue.Enqueue(VisitContext.CreateObject(name, root));
         }
 
         public void Add(Type type)
@@ -27,7 +27,7 @@ namespace Size.Sharp
                 return;
             }
 
-            ParseStatic(type.Name, type);
+            queue.Enqueue(VisitContext.CreateStatic(type));
         }
 
         protected virtual void OnVisitObject(string path, Type type, long size, object value)
@@ -38,9 +38,14 @@ namespace Size.Sharp
         {
         }
 
+        protected virtual void OnVisitType(string path, Type type, long size)
+        {
+        }
+
         protected virtual void OnVisitPath(string path, string oldPath)
         {
         }
+
     }
 
 }

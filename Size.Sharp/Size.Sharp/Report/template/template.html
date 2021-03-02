@@ -23,17 +23,28 @@
 
 <body>
 
-<h1>Size Report</h1>
-<hr/>
-
 <main id="app">
-    <template>
+    <template v-if="loaded">
+        <h1>Size Report</h1>
+        <hr/>
+
         <el-tree
             :props="props"
             :load="load"
             :render-content="renderContent"
             lazy
         />
+    </template>
+    <template v-else>
+        <el-dialog
+            :visible="true"
+            :fullscreen="true"
+            :show-close="false"
+            :center="true">
+            <div style="text-align: center">
+                <el-progress type="circle" :percentage="percent"/>
+            </div>
+        </el-dialog>
     </template>
 </main>
     
