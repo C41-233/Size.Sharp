@@ -47,11 +47,6 @@ namespace Size.Sharp.Core
             return size;
         }
 
-        public static bool IsFixSize(Type type)
-        {
-            return TryGetFixSize(type, out _);
-        }
-
         public static IEnumerable<FieldInfo> GetFields(Type type, BindingFlags flag)
         {
             var flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly | flag;

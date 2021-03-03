@@ -11,7 +11,7 @@
         /*@lib.element-ui.css*/
     </style>
     <style type="text/css">
-        /*style.css*/
+        /*@style.css*/
     </style>
     <script type="text/javascript">
         //@lib.vue.min.js
@@ -25,15 +25,27 @@
 
 <main id="app">
     <template v-if="loaded">
-        <h1>Size Report</h1>
+        <table>
+            <tr>
+                <th>引用类型：</th>
+                <td>{{totalObject}}</td>
+            </tr>
+            <tr>
+                <th>值类型：</th>
+                <td>{{totalValue}}</td>
+            </tr>
+            <tr>
+                <th>估算总内存：</th>
+                <td>{{toSize(totalSize)}}</td>
+            </tr>
+        </table>
         <hr/>
 
         <el-tree
             :props="props"
             :load="load"
             :render-content="renderContent"
-            lazy
-        />
+            lazy/>
     </template>
     <template v-else>
         <el-dialog
@@ -49,11 +61,8 @@
 </main>
     
 <script type="text/javascript">
-    //script.js
+    //@script.js
 </script>
-
-<script src="../../../Size.Sharp/Report/template/script.js"></script>    
-<link href="../../../Size.Sharp/Report/template/style.css" rel="stylesheet"/>    
 
 </body>
 

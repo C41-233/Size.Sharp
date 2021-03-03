@@ -65,7 +65,16 @@ namespace Size.Sharp.Report
         public void Dispose()
         {
             root.End();
-            writer.WriteLine();
+            writer.WriteLine(";");
+
+            writer.Write("var R=");
+            var other = new JsonObject(writer);
+            other.BeginObject();
+            other.Field("TotalObject", VisitObjectCount);
+            other.Field("TotalValue", VisitValueCount);
+            other.EndObject();
+            writer.WriteLine(";");
+
             writer.Write(Template.End);
             writer.Dispose();
         }

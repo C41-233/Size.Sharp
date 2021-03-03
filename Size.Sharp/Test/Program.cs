@@ -18,11 +18,15 @@ namespace Test
         {
             root.root = root;
             var visitor = new ReportMemoryVisitor(new FileStream("output.html", FileMode.Create));
-           // foreach (var ass in AppDomain.CurrentDomain.GetAssemblies())
+            visitor.MergeInternalValueType = true;
+            foreach (var ass in AppDomain.CurrentDomain.GetAssemblies())
             {
-                foreach (var type in Assembly.GetExecutingAssembly().GetTypes())
+                foreach (var type in ass.GetTypes())
                 {
+                    {
                     visitor.Add(type);
+
+                    }
                 }
             }
             while (visitor.MoveNext())

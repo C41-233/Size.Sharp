@@ -22,7 +22,10 @@ let app = new Vue({
 				isLeaf: 'isLeaf'
 			},
 			loaded: false,
-			percent: 0
+			percent: 0,
+			totalObject: R.TotalObject,
+			totalValue: R.TotalValue,
+			totalSize: 0
 		};
 	},
 	methods: {
@@ -41,6 +44,9 @@ let app = new Vue({
 			
 			for(let name in obj.children){
 				let child = obj.children[name];
+				if(child.totalSize === 0){
+					continue;
+				}
 				let span = {
 					label: name,
 					node: () => child
@@ -49,6 +55,7 @@ let app = new Vue({
 				array.push(span);
 			}
 			
+			array.sort((x, y) => y.node().totalSize - x.node().totalSize);
 			resolve(array);
 		},
 		renderContent(h, node){
@@ -56,8 +63,26 @@ let app = new Vue({
 			return h("div", [
 				h("span", {attrs: {'class': "path-name"}}, obj.name),
 				h("span", {attrs: {'class': 'path-type'}}, obj.type),
-				h("span", {attrs: {'class': 'path-size'}}, `${obj.size} / ${obj.totalSize}`)
+				h("span", {attrs: {'class': 'path-size'}}, `${this.toSize(obj.size)} / ${this.toSize(obj.totalSize)}`)
 			])
+		},
+		toSize(val){
+			if(val === 0){
+				return 0;
+			}
+			if(val < 1024){
+				return val + "B";
+			}
+			val /= 1024;
+			if(val < 1024){
+				return val.toFixed(3) + "K";
+			}
+			val /= 1024;
+			if(val < 1024){
+				return val.toFixed(3) + "M";
+			}
+			val /= 1024;
+			return val.toFixed(3) + "G";
 		}
 	}
 });
@@ -97,6 +122,7 @@ function CreateNode(name){
 (async function(){
 	let total = G.length;
 	let current = 0;
+	let size = 0;
 
 	tree = CreateNode("<root>");
 
@@ -117,24 +143,20 @@ function CreateNode(name){
 					return alias.totalSize;
 				}
 			});
-			Object.defineProperty(node, "visited", {
-				get(){
-					return alias.visited;
-				}
-			});
 			node.children = alias.children;
 		}
 		else{
 			let node = getNodeByPath(tree, input.path);
 			node.type = input.type;
 			node.size += input.size;
+			size += input.size;
 		}
 		
 		current++;
 		app.percent = parseInt(current * 100 / total);
 		
 		let thisTime = Time();
-		if(thisTime - lastTime > 500){
+		if(thisTime - lastTime > 350){
 			await Wait(0);
 			lastTime = thisTime;
 		}
@@ -156,6 +178,7 @@ function CreateNode(name){
 
 	CalcSize(tree);
 	
+	app.totalSize = size;
 	app.loaded = true;
 })();
 

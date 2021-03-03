@@ -70,7 +70,14 @@ namespace Size.Sharp
                 return;
             }
 
-            VisitObjectCount++;
+            if (type.IsValueType)
+            {
+                VisitValueCount++;
+            }
+            else
+            {
+                VisitObjectCount++;
+            }
             visits.Add(value, path);
 
             if (value is string str)
@@ -94,9 +101,17 @@ namespace Size.Sharp
             foreach (var field in Reflect.GetFields(type, BindingFlags.Static))
             {
                 var path = parent + '.' + field.Name;
-                if (Reflect.IsFixSize(field.FieldType))
+                if (Reflect.TryGetFixSize(field.FieldType, out var fixSize))
                 {
-                    queue.Enqueue(VisitContext.CreateFix(path, field.FieldType));
+                    if (MergeInternalValueType)
+                    {
+                        size += fixSize;
+                        VisitValueCount++;
+                    }
+                    else
+                    {
+                        queue.Enqueue(VisitContext.CreateFix(path, field.FieldType));
+                    }
                 }
                 else
                 {
@@ -123,13 +138,21 @@ namespace Size.Sharp
 
         private void ParseString(string path, string value)
         {
-            const long size = CLRSize + sizeof(int);
+            long size = CLRSize + sizeof(int);
+            if (MergeInternalValueType)
+            {
+                size += sizeof(char) * value.Length;
+                VisitValueCount++;
+            }
+            else
+            {
+                for (var i = 0; i < value.Length; i++)
+                {
+                    queue.Enqueue(VisitContext.CreateFix(path + '.' + i, typeof(char)));
+                }
+            }
             VisitSize += size;
             OnVisitObject(path, typeof(string), size, value);
-            for (var i = 0; i < value.Length; i++)
-            {
-                queue.Enqueue(VisitContext.CreateFix(path + '.' + i, typeof(char)));
-            }
         }
 
         private struct VisitArrayContext
@@ -206,9 +229,17 @@ namespace Size.Sharp
             foreach (var field in Reflect.GetFields(type, BindingFlags.Instance))
             {
                 var path = parent + '.' + field.Name;
-                if (Reflect.IsFixSize(field.FieldType))
+                if (Reflect.TryGetFixSize(field.FieldType, out var fixSize))
                 {
-                    queue.Enqueue(VisitContext.CreateFix(path, field.FieldType));
+                    if (MergeInternalValueType)
+                    {
+                        queue.Enqueue(VisitContext.CreateFix(path, field.FieldType));
+                        VisitValueCount++;
+                    }
+                    else
+                    {
+                        size += fixSize;
+                    }
                 }
                 else
                 {

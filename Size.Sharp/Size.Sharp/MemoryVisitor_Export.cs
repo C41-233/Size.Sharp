@@ -5,6 +5,8 @@ namespace Size.Sharp
     public partial class MemoryVisitor
     {
 
+        public bool MergeInternalValueType { get; set; } = true;
+
         public void Add(object root, string name = "<root>")
         {
             if (root == null)

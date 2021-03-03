@@ -9,3 +9,7 @@
 .path-name{
 	font-weight: bold;
 }
+
+th {
+    text-align: right;
+}
