@@ -58,6 +58,12 @@ namespace Size.Sharp
                 return;
             }
 
+            if (visitType == VisitType.Cascade)
+            {
+                ParseCascade(path, type);
+                return;
+            }
+
             // visitType == VisitType.Object
 
             if (ReferenceEquals(value, this))
@@ -138,6 +144,28 @@ namespace Size.Sharp
             OnVisitValue(path, type, size);
         }
 
+        private void ParseCascade(string parent, Type type)
+        {
+            long size = 0;
+            foreach (var field in Reflect.GetFields(type, BindingFlags.Instance))
+            {
+                if (MergePrimitiveType)
+                {
+                    size += Reflect.GetFixSize(field.FieldType);
+                    VisitValueCount++;
+                }
+                else
+                {
+                    var path = parent + '.' + field.Name;
+                    queue.Enqueue(VisitContext.CreateFix(path, field.FieldType));
+                }
+            }
+
+            VisitSize += size;
+            VisitValueCount++;
+            OnVisitValue(parent, type, size);
+        }
+
         private void ParseString(string path, string value)
         {
             long size = CLRSize + sizeof(int);
@@ -161,6 +189,7 @@ namespace Size.Sharp
         {
             public bool FixSize;
             public Type ElementType;
+            public long ElementSize;
         }
 
         private void ParseArray(string path, Array array, Type type)
@@ -201,6 +230,7 @@ namespace Size.Sharp
             {
                 ElementType = elementType,
                 FixSize = fixSize,
+                ElementSize = elementSize,
             };
             ParseArrayRank(ref parseContext, path, array, 0, indexes);
         }
@@ -209,33 +239,38 @@ namespace Size.Sharp
         {
             var lower = array.GetLowerBound(dimension);
             var upper = array.GetUpperBound(dimension);
-            for (var i=lower; i<=upper; i++)
+
+            if (dimension == indexes.Length - 1)
             {
-                indexes[dimension] = i;
-                var path = parent + '.' + i;
-                if (dimension == indexes.Length - 1)
+                if (context.FixSize)
                 {
-                    ParseArrayElement(ref context, path, array, indexes);
+                    for (var i = lower; i <= upper; i++)
+                    {
+                        var path = parent + '.' + i;
+                        OnVisitValue(path, context.ElementType, context.ElementSize);
+                    }
                 }
                 else
                 {
-                    ParseArrayRank(ref context, path, array, dimension + 1, indexes);
+                    for (var i = lower; i <= upper; i++)
+                    {
+                        var path = parent + '.' + i;
+                        indexes[dimension] = i;
+                        var value = array.GetValue(indexes);
+                        if (value != null)
+                        {
+                            queue.Enqueue(VisitContext.CreateObject(path, value));
+                        }
+                    }
                 }
-            }
-        }
-
-        private void ParseArrayElement(ref VisitArrayContext context, string path, Array array, int[] indexes)
-        {
-            if (context.FixSize)
-            {
-                queue.Enqueue(VisitContext.CreateFix(path, context.ElementType));
             }
             else
             {
-                var value = array.GetValue(indexes);
-                if (value != null)
+                for (var i = lower; i <= upper; i++)
                 {
-                    queue.Enqueue(VisitContext.CreateObject(path, value));
+                    var path = parent + '.' + i;
+                    indexes[dimension] = i;
+                    ParseArrayRank(ref context, path, array, dimension + 1, indexes);
                 }
             }
         }
@@ -257,6 +292,10 @@ namespace Size.Sharp
                     {
                         queue.Enqueue(VisitContext.CreateFix(path, field.FieldType));
                     }
+                }
+                else if (Reflect.IsCascadeValueType(field.FieldType))
+                {
+                    queue.Enqueue(VisitContext.CreateCascade(path, field.FieldType));
                 }
                 else
                 {

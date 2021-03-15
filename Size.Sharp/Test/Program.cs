@@ -44,6 +44,7 @@ namespace Test
         public List<Type> types = new List<Type>{typeof(string)};
         public Root root;
         public event Action e;
+        public KeyValuePair<int, int> vv;
     }
 
 }

@@ -11,6 +11,7 @@ namespace Size.Sharp
             Object,
             Fix,
             Static,
+            Cascade,
         }
 
         private struct VisitContext
@@ -45,12 +46,21 @@ namespace Size.Sharp
             {
                 return new VisitContext
                 {
-                    Path = string.Intern(type.GetTypeNameString()),
+                    Path = string.Intern(type.GetTypeNameString().Replace('.', '+')),
                     Type = type,
                     VisitType = VisitType.Static,
                 };
             }
 
+            public static VisitContext CreateCascade(string path, Type type)
+            {
+                return new VisitContext
+                {
+                    Path = string.Intern(path),
+                    Type = type,
+                    VisitType = VisitType.Cascade,
+                };
+            }
         }
 
     }

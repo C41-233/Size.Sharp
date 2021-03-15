@@ -51,7 +51,15 @@ let app = new Vue({
 					label: name,
 					node: () => child
 				};
-				span.isLeaf = Object.keys(child.children).length === 0;
+				
+				span.isLeaf = true;
+				for(let key in child.children){
+					if(child.children[key].totalSize > 0){
+						span.isLeaf = false;
+						break;
+					}
+				}
+				
 				array.push(span);
 			}
 			
