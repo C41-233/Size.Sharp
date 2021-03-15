@@ -31,7 +31,7 @@ namespace Size.Sharp.Report
             jobj.EndObject();
         }
 
-        protected override void OnVisitInternalValueType(string path, Type type, long size)
+        protected override void OnVisitValue(string path, Type type, long size)
         {
             root.Element();
             var jobj = new JsonObject(writer);

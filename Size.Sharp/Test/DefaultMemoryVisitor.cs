@@ -15,7 +15,7 @@ namespace Test
             Console.WriteLine($"{path} | {type.GetTypeNameString()} | {size}");
         }
 
-        protected override void OnVisitInternalValueType(string path, Type type, long size)
+        protected override void OnVisitValue(string path, Type type, long size)
         {
             Console.WriteLine($"{path} | {type.GetTypeNameString()} | {size}");
         }

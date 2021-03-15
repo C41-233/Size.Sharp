@@ -5,7 +5,11 @@ namespace Size.Sharp
     public partial class MemoryVisitor
     {
 
-        public bool MergeInternalValueType { get; set; } = true;
+        /// <summary>
+        /// 把基本类型合并到其父路径，不再单独OnVisitValue
+        /// 基本类型包括primitive type、enum、pointer
+        /// </summary>
+        public bool MergePrimitiveType { get; set; } = true;
 
         public void Add(object root, string name = "<root>")
         {
@@ -36,7 +40,7 @@ namespace Size.Sharp
         {
         }
 
-        protected virtual void OnVisitInternalValueType(string path, Type type, long size)
+        protected virtual void OnVisitValue(string path, Type type, long size)
         {
         }
 

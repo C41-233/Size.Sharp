@@ -54,10 +54,11 @@ namespace Size.Sharp
 
             if (visitType == VisitType.Fix)
             {
-                VisitValueCount++;
                 ParseFix(path, type);
                 return;
             }
+
+            // visitType == VisitType.Object
 
             if (ReferenceEquals(value, this))
             {
@@ -103,7 +104,7 @@ namespace Size.Sharp
                 var path = parent + '.' + field.Name;
                 if (Reflect.TryGetFixSize(field.FieldType, out var fixSize))
                 {
-                    if (MergeInternalValueType)
+                    if (MergePrimitiveType)
                     {
                         size += fixSize;
                         VisitValueCount++;
@@ -133,16 +134,17 @@ namespace Size.Sharp
         {
             var size = Reflect.GetFixSize(type);
             VisitSize += size;
-            OnVisitInternalValueType(path, type, size);
+            VisitValueCount++;
+            OnVisitValue(path, type, size);
         }
 
         private void ParseString(string path, string value)
         {
             long size = CLRSize + sizeof(int);
-            if (MergeInternalValueType)
+            if (MergePrimitiveType)
             {
                 size += sizeof(char) * value.Length;
-                VisitValueCount++;
+                VisitValueCount += value.Length;
             }
             else
             {
@@ -159,7 +161,6 @@ namespace Size.Sharp
         {
             public bool FixSize;
             public Type ElementType;
-            public long ElementSize;
         }
 
         private void ParseArray(string path, Array array, Type type)
@@ -169,19 +170,35 @@ namespace Size.Sharp
             var elementType = type.GetElementType();
             var count = array.Length;
             var fixSize = Reflect.TryGetFixSize(elementType, out var elementSize);
-            var rank = type.GetArrayRank();
 
-            if (!fixSize)
+            var merge = false;
+            if (fixSize)
             {
-                size += count * IntPtr.Size;
+                size += elementSize * count;
+                merge = MergePrimitiveType;
+            }
+            else
+            {
+                size += IntPtr.Size * count;
+            }
+
+            if (merge)
+            {
+                VisitValueCount += count;
+                VisitSize += size;
             }
 
             OnVisitObject(path, type, size, array);
 
+            if (merge)
+            {
+                return;
+            }
+
+            var rank = type.GetArrayRank();
             var indexes = new int[rank];
             var parseContext = new VisitArrayContext
             {
-                ElementSize = elementSize,
                 ElementType = elementType,
                 FixSize = fixSize,
             };
@@ -211,7 +228,7 @@ namespace Size.Sharp
         {
             if (context.FixSize)
             {
-                OnVisitInternalValueType(path, context.ElementType, context.ElementSize);
+                queue.Enqueue(VisitContext.CreateFix(path, context.ElementType));
             }
             else
             {
@@ -231,14 +248,14 @@ namespace Size.Sharp
                 var path = parent + '.' + field.Name;
                 if (Reflect.TryGetFixSize(field.FieldType, out var fixSize))
                 {
-                    if (MergeInternalValueType)
+                    if (MergePrimitiveType)
                     {
-                        queue.Enqueue(VisitContext.CreateFix(path, field.FieldType));
+                        size += fixSize;
                         VisitValueCount++;
                     }
                     else
                     {
-                        size += fixSize;
+                        queue.Enqueue(VisitContext.CreateFix(path, field.FieldType));
                     }
                 }
                 else
@@ -254,7 +271,14 @@ namespace Size.Sharp
             }
 
             VisitSize += size;
-            OnVisitObject(parent, type, size, root);
+            if (type.IsValueType)
+            {
+                OnVisitValue(parent, type, size);
+            }
+            else
+            {
+                OnVisitObject(parent, type, size, root);
+            }
         }
 
     }

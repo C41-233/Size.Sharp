@@ -24,7 +24,7 @@ namespace Size.Sharp
             {
                 return new VisitContext
                 {
-                    Path = path,
+                    Path = string.Intern(path),
                     Value = value,
                     Type = value.GetType(),
                     VisitType = VisitType.Object,
@@ -35,7 +35,7 @@ namespace Size.Sharp
             {
                 return new VisitContext
                 {
-                    Path = path,
+                    Path = string.Intern(path),
                     Type = type,
                     VisitType = VisitType.Fix,
                 };
@@ -45,7 +45,7 @@ namespace Size.Sharp
             {
                 return new VisitContext
                 {
-                    Path = type.GetTypeNameString(),
+                    Path = string.Intern(type.GetTypeNameString()),
                     Type = type,
                     VisitType = VisitType.Static,
                 };
